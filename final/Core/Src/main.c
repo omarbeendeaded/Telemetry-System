@@ -19,6 +19,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "can.h"
+#include "dma.h"
+#include "fatfs.h"
+#include "sdio.h"
 #include "spi.h"
 #include "gpio.h"
 
@@ -47,12 +50,23 @@
 /* USER CODE BEGIN PV */
 extern uint8_t RX_Message[8];
 uint8_t tx_data[NRF24L01P_PAYLOAD_LENGTH] = {0};
+
+FIL Fil;
+FATFS FatFs;
+FRESULT FR_Status;
+int rec = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
+
+static void SDIO_SDCard_Test(void);
+static void SD_Init(void);
+static void SD_Write(char* data);
+static void SD_ClrFile(void);
+static void SD_Unmount(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -88,10 +102,16 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_CAN1_Init();
   MX_SPI2_Init();
+  MX_SDIO_SD_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-
+  SD_Init();
+  SD_ClrFile();
+  SD_Write("Hello\n");
+  SD_Write("Full Test\n");
   nrf24l01p_tx_init(2500, _1Mbps);
   /* USER CODE END 2 */
 
@@ -134,9 +154,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 100;
+  RCC_OscInitStruct.PLL.PLLN = 72;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 2;
+  RCC_OscInitStruct.PLL.PLLQ = 3;
   RCC_OscInitStruct.PLL.PLLR = 2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -152,13 +172,65 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
 }
 
 /* USER CODE BEGIN 4 */
+static void SD_Init(void)
+{
+	//------------------[ Mount The SD Card ]--------------------
+	FR_Status = f_mount(&FatFs, SDPath, 1);
+	if (FR_Status != FR_OK)
+	{
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 1);
+	}
+}
+
+static void SD_Write(char* data)
+{
+    //------------------[ Open A Text File For Write & Write Data ]--------------------
+    //Open the file
+    FR_Status = f_open(&Fil, "canTest.txt", FA_WRITE | FA_READ | FA_OPEN_ALWAYS);
+    if(FR_Status != FR_OK)
+    {
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 1);
+    }
+
+    f_lseek(&Fil, f_size(&Fil));
+    FR_Status = f_puts(data, &Fil);
+
+    FR_Status = f_close(&Fil);
+}
+
+static void SD_ClrFile(void)
+{
+    //------------------[ Open A Text File For Write & Write Data ]--------------------
+    //Open the file
+    FR_Status = f_open(&Fil, "canTest.txt", FA_WRITE | FA_READ | FA_CREATE_ALWAYS);
+    if(FR_Status != FR_OK)
+    {
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 1);
+    }
+
+    FR_Status = f_close(&Fil);
+}
+
+
+
+static void SD_Unmount(void)
+{
+	  FR_Status = f_mount(NULL, "", 0);
+	  if (FR_Status != FR_OK)
+	  {
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 1);
+	  }
+}
+
+
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == NRF24L01P_IRQ_PIN_NUMBER)

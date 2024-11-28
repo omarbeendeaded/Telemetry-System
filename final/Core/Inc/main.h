@@ -59,15 +59,17 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BUTT_Pin GPIO_PIN_13
 #define BUTT_GPIO_Port GPIOC
+#define IRQ_Pin GPIO_PIN_1
+#define IRQ_GPIO_Port GPIOB
+#define IRQ_EXTI_IRQn EXTI1_IRQn
 #define LED_Pin GPIO_PIN_2
 #define LED_GPIO_Port GPIOB
 #define CE_Pin GPIO_PIN_12
 #define CE_GPIO_Port GPIOB
 #define CSN_Pin GPIO_PIN_13
 #define CSN_GPIO_Port GPIOB
-#define IRQ_Pin GPIO_PIN_8
-#define IRQ_GPIO_Port GPIOA
-#define IRQ_EXTI_IRQn EXTI9_5_IRQn
+#define SD_DETECT_Pin GPIO_PIN_8
+#define SD_DETECT_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 
