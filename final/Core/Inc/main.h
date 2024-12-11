@@ -59,6 +59,13 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BUTT_Pin GPIO_PIN_13
 #define BUTT_GPIO_Port GPIOC
+#define CE_2_Pin GPIO_PIN_0
+#define CE_2_GPIO_Port GPIOA
+#define CSN_2_Pin GPIO_PIN_1
+#define CSN_2_GPIO_Port GPIOA
+#define IRQ_2_Pin GPIO_PIN_2
+#define IRQ_2_GPIO_Port GPIOA
+#define IRQ_2_EXTI_IRQn EXTI2_IRQn
 #define IRQ_Pin GPIO_PIN_1
 #define IRQ_GPIO_Port GPIOB
 #define IRQ_EXTI_IRQn EXTI1_IRQn

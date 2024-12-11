@@ -9,6 +9,49 @@
 
 #include "nrf24l01p.h"
 
+// Selectors
+SPI_HandleTypeDef* NRF24L01P_SPI;
+
+GPIO_TypeDef* NRF24L01P_SPI_CS_PIN_PORT;
+uint16_t      NRF24L01P_SPI_CS_PIN_NUMBER;
+
+GPIO_TypeDef* NRF24L01P_CE_PIN_PORT;
+uint16_t      NRF24L01P_CE_PIN_NUMBER;
+
+GPIO_TypeDef* NRF24L01P_IRQ_PIN_PORT;
+uint16_t      NRF24L01P_IRQ_PIN_NUMBER;
+
+
+void switch_spi(uint8_t sel)
+{
+	if (sel == SPI_1)
+	{
+		NRF24L01P_SPI = NRF24L01P_SPI_1;
+
+		NRF24L01P_SPI_CS_PIN_PORT   = NRF24L01P_SPI_1_CS_PIN_PORT;
+		NRF24L01P_SPI_CS_PIN_NUMBER = NRF24L01P_SPI_1_CS_PIN_NUMBER;
+
+		NRF24L01P_CE_PIN_PORT   = NRF24L01P_CE_1_PIN_PORT;
+		NRF24L01P_CE_PIN_NUMBER = NRF24L01P_CE_1_PIN_NUMBER;
+
+		NRF24L01P_IRQ_PIN_PORT   = NRF24L01P_IRQ_1_PIN_PORT;
+		NRF24L01P_IRQ_PIN_NUMBER = NRF24L01P_IRQ_1_PIN_NUMBER;
+	}
+	else if (sel == SPI_2)
+	{
+		NRF24L01P_SPI = NRF24L01P_SPI_2;
+
+		NRF24L01P_SPI_CS_PIN_PORT   = NRF24L01P_SPI_2_CS_PIN_PORT;
+		NRF24L01P_SPI_CS_PIN_NUMBER = NRF24L01P_SPI_2_CS_PIN_NUMBER;
+
+		NRF24L01P_CE_PIN_PORT   = NRF24L01P_CE_2_PIN_PORT;
+		NRF24L01P_CE_PIN_NUMBER = NRF24L01P_CE_2_PIN_NUMBER;
+
+		NRF24L01P_IRQ_PIN_PORT   = NRF24L01P_IRQ_2_PIN_PORT;
+		NRF24L01P_IRQ_PIN_NUMBER = NRF24L01P_IRQ_2_PIN_NUMBER;
+	}
+}
+
 
 static void cs_high()
 {
@@ -60,8 +103,10 @@ static uint8_t write_register(uint8_t reg, uint8_t value)
 
 
 /* nRF24L01+ Main Functions */
-void nrf24l01p_rx_init(channel MHz, air_data_rate bps)
+void nrf24l01p_rx_init(channel MHz, air_data_rate bps, uint8_t sel)
 {
+	switch_spi(sel);
+
     nrf24l01p_reset();
 
     nrf24l01p_prx_mode();
@@ -82,8 +127,10 @@ void nrf24l01p_rx_init(channel MHz, air_data_rate bps)
     ce_high();
 }
 
-void nrf24l01p_tx_init(channel MHz, air_data_rate bps)
+void nrf24l01p_tx_init(channel MHz, air_data_rate bps, uint8_t sel)
 {
+	switch_spi(sel);
+
     nrf24l01p_reset();
 
     nrf24l01p_ptx_mode();
@@ -102,21 +149,26 @@ void nrf24l01p_tx_init(channel MHz, air_data_rate bps)
     ce_high();
 }
 
-void nrf24l01p_rx_receive(uint8_t* rx_payload)
+void nrf24l01p_rx_receive(uint8_t* rx_payload, uint8_t sel)
 {
+	switch_spi(sel);
+
     nrf24l01p_read_rx_fifo(rx_payload);
     nrf24l01p_clear_rx_dr();
 
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 }
 
-void nrf24l01p_tx_transmit(uint8_t* tx_payload)
+void nrf24l01p_tx_transmit(uint8_t* tx_payload, uint8_t sel)
 {
+	switch_spi(sel);
     nrf24l01p_write_tx_fifo(tx_payload);
 }
 
-void nrf24l01p_tx_irq()
+void nrf24l01p_tx_irq(uint8_t sel)
 {
+	switch_spi(sel);
+
     uint8_t tx_ds = nrf24l01p_get_status();
     tx_ds &= 0x20;
 

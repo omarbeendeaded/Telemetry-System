@@ -15,20 +15,36 @@
 #include "spi.h"    // header from stm32cubemx code generate
 #include <stdbool.h>
 
-
 /* User Configurations */
-#define NRF24L01P_SPI                     (&hspi2)
 
-#define NRF24L01P_SPI_CS_PIN_PORT         GPIOB 
-#define NRF24L01P_SPI_CS_PIN_NUMBER       GPIO_PIN_13
-
-#define NRF24L01P_CE_PIN_PORT             GPIOB
-#define NRF24L01P_CE_PIN_NUMBER           GPIO_PIN_12
-
-#define NRF24L01P_IRQ_PIN_PORT            GPIOA
-#define NRF24L01P_IRQ_PIN_NUMBER          GPIO_PIN_8
+#define SPI_1 0
+#define SPI_2 1
 
 #define NRF24L01P_PAYLOAD_LENGTH          8     // 1 - 32bytes
+
+// Sender Config
+#define NRF24L01P_SPI_1                     (&hspi1)
+
+#define NRF24L01P_SPI_1_CS_PIN_PORT         GPIOA
+#define NRF24L01P_SPI_1_CS_PIN_NUMBER       GPIO_PIN_1
+
+#define NRF24L01P_CE_1_PIN_PORT             GPIOA
+#define NRF24L01P_CE_1_PIN_NUMBER           GPIO_PIN_0
+
+#define NRF24L01P_IRQ_1_PIN_PORT            GPIOA
+#define NRF24L01P_IRQ_1_PIN_NUMBER          GPIO_PIN_2
+
+// Receiver Configs
+#define NRF24L01P_SPI_2                     (&hspi2)
+
+#define NRF24L01P_SPI_2_CS_PIN_PORT         GPIOB
+#define NRF24L01P_SPI_2_CS_PIN_NUMBER       GPIO_PIN_13
+
+#define NRF24L01P_CE_2_PIN_PORT             GPIOB
+#define NRF24L01P_CE_2_PIN_NUMBER           GPIO_PIN_12
+
+#define NRF24L01P_IRQ_2_PIN_PORT            GPIOB
+#define NRF24L01P_IRQ_2_PIN_NUMBER          GPIO_PIN_1
 
 
 /* nRF24L01+ typedefs */
@@ -55,14 +71,16 @@ typedef enum
 
 
 /* Main Functions */
-void nrf24l01p_rx_init(channel MHz, air_data_rate bps);
-void nrf24l01p_tx_init(channel MHz, air_data_rate bps);
+void switch_spi(uint8_t sel);
 
-void nrf24l01p_rx_receive(uint8_t* rx_payload);
-void nrf24l01p_tx_transmit(uint8_t* tx_payload);
+void nrf24l01p_rx_init(channel MHz, air_data_rate bps, uint8_t sel);
+void nrf24l01p_tx_init(channel MHz, air_data_rate bps, uint8_t sel);
+
+void nrf24l01p_rx_receive(uint8_t* rx_payload, uint8_t sel);
+void nrf24l01p_tx_transmit(uint8_t* tx_payload, uint8_t sel);
 
 // Check tx_ds or max_rt
-void nrf24l01p_tx_irq();  
+void nrf24l01p_tx_irq(uint8_t sel);
 
 
 /* Sub Functions */

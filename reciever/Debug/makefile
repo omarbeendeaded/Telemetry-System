@@ -60,8 +60,8 @@ all: main-build
 main-build: reciever.elf secondary-outputs
 
 # Tool invocations
-reciever.elf reciever.map: $(OBJS) $(USER_OBJS) D:\ASU\ racing\ team\Urban\ Team\Season\ 24-25\Shell\ 25'\ Qatar\final2\reciever\STM32F412RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "reciever.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\ASU racing team\Urban Team\Season 24-25\Shell 25' Qatar\final2\reciever\STM32F412RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="reciever.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+reciever.elf reciever.map: $(OBJS) $(USER_OBJS) C:\Users\Omar\Desktop\Ain\ Zeft\ 3ala\ dma8y\Racing\ Team\Shell\ 2025\Repo\reciever\STM32F412RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "reciever.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Omar\Desktop\Ain Zeft 3ala dma8y\Racing Team\Shell 2025\Repo\reciever\STM32F412RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="reciever.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

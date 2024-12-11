@@ -37,7 +37,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define SPI_TX SPI_1
+#define SPI_RX SPI_2
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,7 +50,8 @@
 
 /* USER CODE BEGIN PV */
 extern uint8_t RX_Message[8];
-uint8_t tx_data[NRF24L01P_PAYLOAD_LENGTH] = {0};
+uint8_t tx_data[NRF24L01P_PAYLOAD_LENGTH] = {'O','m','a','r','2','9','8','\0'};
+uint8_t rx_data[NRF24L01P_PAYLOAD_LENGTH] = { 'M', 'o' , '1', '1' , '2' ,'1' , '3','\0'};
 
 FIL Fil;
 FATFS FatFs;
@@ -107,12 +109,16 @@ int main(void)
   MX_SPI2_Init();
   MX_SDIO_SD_Init();
   MX_FATFS_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   SD_Init();
   SD_ClrFile();
   SD_Write("Hello\n");
   SD_Write("Full Test\n");
-  nrf24l01p_tx_init(2500, _1Mbps);
+
+  nrf24l01p_rx_init(2500, _1Mbps, SPI_RX);
+  nrf24l01p_tx_init(2490, _1Mbps, SPI_TX);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -125,7 +131,10 @@ int main(void)
 
 	  if(HAL_GPIO_ReadPin(BUTT_GPIO_Port, BUTT_Pin))
 	  {
-        nrf24l01p_tx_transmit(RX_Message);
+        nrf24l01p_tx_transmit(tx_data, SPI_TX);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 1);
+		HAL_Delay(300);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 0);
 	  }
   }
   /* USER CODE END 3 */
@@ -154,9 +163,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 72;
+  RCC_OscInitStruct.PLL.PLLN = 100;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 3;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   RCC_OscInitStruct.PLL.PLLR = 2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -172,7 +181,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -233,8 +242,14 @@ static void SD_Unmount(void)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if(GPIO_Pin == NRF24L01P_IRQ_PIN_NUMBER)
-		nrf24l01p_tx_irq(); // clear interrupt flag
+	if(GPIO_Pin == NRF24L01P_IRQ_1_PIN_NUMBER)
+		nrf24l01p_tx_irq(SPI_TX); // clear interrupt flag
+
+	if(GPIO_Pin == NRF24L01P_IRQ_2_PIN_NUMBER)
+	{
+		nrf24l01p_rx_receive(rx_data, SPI_RX); // read data when data ready flag is set
+	    HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+	}
 }
 /* USER CODE END 4 */
 

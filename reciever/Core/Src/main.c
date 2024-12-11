@@ -48,6 +48,7 @@
 
 /* USER CODE BEGIN PV */
 uint8_t rx_data[NRF24L01P_PAYLOAD_LENGTH] = { 'M', 'o' , '1', '1' , '2' ,'1' , '3','\0'};
+uint8_t tx_data[NRF24L01P_PAYLOAD_LENGTH] = {'O','m','a','r','2','9','8','\0'};
 
 uint8_t txBuffer[] = {'h','n','\0'};
 /* USER CODE END PV */
@@ -94,8 +95,10 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI2_Init();
   MX_USART2_UART_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  nrf24l01p_rx_init(2500, _1Mbps);
+  // nrf24l01p_rx_init(2500, _1Mbps, SPI_2);
+  nrf24l01p_tx_init(2490, _1Mbps, SPI_2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -116,13 +119,19 @@ int main(void)
 //	  {
 //		  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
 //	  }
+	  if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13))
+	  {
+        nrf24l01p_tx_transmit(tx_data, SPI_2);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 1);
+		HAL_Delay(300);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, 0);
+	  }
 
 	  if(rx_data[0] == 'O')
 	  {
-//	     HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+//	     HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
 	  }
 
-	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
@@ -177,10 +186,12 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if(GPIO_Pin == NRF24L01P_IRQ_PIN_NUMBER)
+	if(GPIO_Pin == NRF24L01P_IRQ_2_PIN_NUMBER)
 	{
-		nrf24l01p_rx_receive(rx_data); // read data when data ready flag is set
-	    HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+		nrf24l01p_tx_irq(SPI_2); // clear interrupt flag
+
+//		nrf24l01p_rx_receive(rx_data, SPI_2); // read data when data ready flag is set
+//	    HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	}
 }
 /* USER CODE END 4 */
